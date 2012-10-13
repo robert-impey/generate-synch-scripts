@@ -15,6 +15,21 @@ GetOptions(
     'directory|d=s' => \$directory
 ) or pod2usage(2);
 
+my $windows = $^O eq 'MSWin32';
+
+my ($script_extension, $cd_command, $script_calling_command, $directory_separator);
+if ($windows) {
+    $script_extension = 'bat';
+    $cd_command = 'CD';
+    $script_calling_command = 'CALL';
+    $directory_separator = '\\';
+} else {
+    $script_extension = 'sh';
+    $cd_command = 'cd';
+    $script_calling_command = '/bin/bash';
+    $directory_separator = '/';
+}
+
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
@@ -36,7 +51,8 @@ for (6 .. $#directories_file_lines) {
 
 # Make the script to synch the rsync excluded files.
 
-my $sef_script = "$directory/update-rsync-excluded.bat";
+my $sef_script = "$directory/update-rsync-excluded.$script_extension";
+
 unless (-f $sef_script) {
     open SEF, ">$sef_script";
     print SEF <<OUT;
@@ -45,6 +61,8 @@ $rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
 OUT
 
     close SEF;
+    
+    chmod(0755, $sef_script) unless $windows;
 }
 
 # Make the scripts for synching
@@ -62,40 +80,46 @@ for (qw/from to/) {
             ($source, $destination) = ($destination, $source);
         }
         
-        my $synch_script = "$synch_script_dir/$dir_to_synch.bat";
+        my $synch_script = "$synch_script_dir/$dir_to_synch.$script_extension";
         
         unless (-f $synch_script) {
             open SYNCH, ">$synch_script" or die $!;
             print SYNCH "$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
             close SYNCH;
+            
+            chmod(0755, $synch_script) unless $windows;
         }
     }
     
-    my $all_script = "$synch_script_dir/all.bat";
+    my $all_script = "$synch_script_dir/all.$script_extension";
     unless (-f $all_script) {
         open ALL, ">$all_script";
         for my $dir_to_synch (@dirs_to_synch) {
-            print ALL "CALL $dir_to_synch.bat\n";
+            print ALL "$script_calling_command $dir_to_synch.$script_extension\n";
         }
         close ALL;
+        
+        chmod(0755, $all_script) unless $windows;
     }
 }
 
 # Make the script for running everything
-my $all_script = "$directory/all.bat";
+my $all_script = "$directory/all.$script_extension";
 unless (-f $all_script) {
     open ALL, ">$all_script";
     print ALL <<OUT;
-CD "$directory"
-CALL update-rsync-excluded.bat
-CD to
-CALL all.bat
-CD ..\\from
-CALL all.bat
-CD ..
+$cd_command "$directory"
+$script_calling_command update-rsync-excluded.$script_extension
+$cd_command to
+$script_calling_command all.$script_extension
+$cd_command ..${directory_separator}from
+$script_calling_command all.$script_extension
+$cd_command ..
 OUT
 
     close ALL;
+    
+    chmod(0755, $all_script) unless $windows;
 }
 
 __END__
