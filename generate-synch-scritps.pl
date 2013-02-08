@@ -138,14 +138,15 @@ __END__
 
 =head1 NAME
 
-    sample - Using GetOpt::Long and Pod::Usage
+    generate-synch-scripts.pl - A program for generating scripts for synchronising directories using rsync.
 
 =head1 SYNOPSIS
 
-    sample [options] [file ...]
+    generate-synch-scripts.pl -d [directory]
      Options:
        -help            brief help message
        -man             full documentation
+       -directory|d		The directory in which to generate the scripts.
 
 =head1 OPTIONS
 
@@ -159,11 +160,32 @@ Print a brief help message and exits.
 
 Prints the manual page and exits.
 
+=item B<-directory|d>
+
+Set the directory in which to generate the scripts.
+
 =back
 
 =head1 DESCRIPTION
 
-B<This program> will read the given input file(s) and do someting
-useful with the contents thereof.
+B<generate-synch-scripts.pl> looks in a directory for a file call gss.txt.
+
+An example of such a file might be:
+
+	rsync --progress -rvuztp 
+	/cygdrive/V/rsync-excluded.txt
+	/cygdrive/W/rsync-excluded.txt
+	/cygdrive/V
+	/cygdrive/W
+	
+	videos
+	music
+	books
+
+The first line of the file is the rsync command that will be used to synch the directories.
+The second and third lines contain the locations of the files that list the files to be excluded.
+The third and fourth lines contain the top level directories that contain the directories that will be synched.
+
+After the blank line, each line is for a directory in the top-level directory to be synched.
 
 =cut
