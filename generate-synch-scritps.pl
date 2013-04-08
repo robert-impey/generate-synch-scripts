@@ -56,7 +56,10 @@ my $rsync_command;
 my @dirs_to_synch;
 
 for ( 6 .. $#directories_file_lines ) {
-	push @dirs_to_synch, $directories_file_lines[$_];
+	my $directories_file_line = $directories_file_lines[$_];
+	unless ($directories_file_line =~ /^\s*$/) {
+		push @dirs_to_synch, $directories_file_lines[$_];
+	}
 }
 
 # Make the script to synch the rsync excluded files.
