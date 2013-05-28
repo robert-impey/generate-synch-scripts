@@ -125,9 +125,9 @@ unless ( -f $all_script ) {
 	print ALL <<OUT;
 $cd_command "$directory"
 $script_calling_command update-rsync-excluded.$script_extension
-$cd_command to
+$cd_command from
 $script_calling_command all.$script_extension
-$cd_command ..${directory_separator}from
+$cd_command ..${directory_separator}to
 $script_calling_command all.$script_extension
 $cd_command ..
 OUT
