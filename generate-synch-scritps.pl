@@ -6,6 +6,10 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
+use GenerateSynchScripts qw(
+  generate_run_all_script
+);
+
 my $man  = 0;
 my $help = 0;
 
@@ -57,7 +61,7 @@ my @dirs_to_synch;
 
 for ( 6 .. $#directories_file_lines ) {
 	my $directories_file_line = $directories_file_lines[$_];
-	unless ($directories_file_line =~ /^\s*$/) {
+	unless ( $directories_file_line =~ /^\s*$/ ) {
 		push @dirs_to_synch, $directories_file_lines[$_];
 	}
 }
@@ -119,23 +123,8 @@ for (qw/from to/) {
 }
 
 # Make the script for running everything
-my $all_script = "$directory/all.$script_extension";
-unless ( -f $all_script ) {
-	open ALL, ">$all_script";
-	print ALL <<OUT;
-$cd_command "$directory"
-$script_calling_command update-rsync-excluded.$script_extension
-$cd_command from
-$script_calling_command all.$script_extension
-$cd_command ..${directory_separator}to
-$script_calling_command all.$script_extension
-$cd_command ..
-OUT
-
-	close ALL;
-
-	chmod( 0755, $all_script ) unless $windows;
-}
+generate_run_all_script( $directory, $script_extension, $cd_command,
+	$script_calling_command, $directory_separator, $windows );
 
 __END__
 
