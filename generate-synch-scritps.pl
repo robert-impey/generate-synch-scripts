@@ -24,21 +24,23 @@ GetOptions(
 
 my $windows = $^O eq 'MSWin32';
 
-my (
-	$script_extension,       $cd_command,
-	$script_calling_command, $directory_separator
-);
+my ( $script_extension, $cd_command, $script_calling_command,
+	$directory_separator, $pushd_command, $popd_command );
 if ($windows) {
 	$script_extension       = 'bat';
 	$cd_command             = 'CD';
 	$script_calling_command = 'CALL';
 	$directory_separator    = '\\';
+	$pushd_command          = 'PUSHD';
+	$popd_command           = 'POPD';
 }
 else {
 	$script_extension       = 'sh';
 	$cd_command             = 'cd';
 	$script_calling_command = '/bin/bash';
 	$directory_separator    = '/';
+	$pushd_command          = 'pushd';
+	$popd_command           = 'popd';
 }
 
 pod2usage(1) if $help;
@@ -124,7 +126,8 @@ for (qw/from to/) {
 
 # Make the script for running everything
 generate_run_all_script( $directory, $script_extension, $cd_command,
-	$script_calling_command, $directory_separator, $windows );
+	$script_calling_command, $directory_separator, $windows, $pushd_command,
+	$popd_command );
 
 __END__
 
