@@ -20,9 +20,9 @@ sub generate_run_all_script {
 		print ALL <<OUT;
 $pushd_command "$directory"
 $script_calling_command update-rsync-excluded.$script_extension
-$cd_command from
+$cd_command to
 $script_calling_command all.$script_extension
-$cd_command ..${directory_separator}to
+$cd_command ..${directory_separator}from
 $script_calling_command all.$script_extension
 $cd_command ..
 $popd_command

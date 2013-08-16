@@ -54,11 +54,10 @@ chomp @directories_file_lines;
 my ( %container_directories, %rsync_excluded_files );
 my $rsync_command;
 (
-	$rsync_command,                $rsync_excluded_files{local},
-	$rsync_excluded_files{remote}, $container_directories{local},
-	$container_directories{remote}
-  )
-  = @directories_file_lines[ 0 .. 4 ];
+	$rsync_command,
+	$rsync_excluded_files{'local'}, $rsync_excluded_files{'remote'},
+	$container_directories{'local'}, $container_directories{'remote'}
+) = @directories_file_lines[ 0 .. 4 ];
 my @dirs_to_synch;
 
 for ( 6 .. $#directories_file_lines ) {
@@ -86,14 +85,14 @@ OUT
 
 # Make the scripts for synching
 
-for (qw/from to/) {
+for (qw/to from/) {
 	my $direction        = $_;
 	my $synch_script_dir = "$directory/$direction";
 	mkdir $synch_script_dir unless -d $synch_script_dir;
 
 	for my $dir_to_synch (@dirs_to_synch) {
-		my $source      = $container_directories{local} . "/$dir_to_synch";
-		my $destination = $container_directories{remote} . "/$dir_to_synch";
+		my $source      = $container_directories{'local'} . "/$dir_to_synch";
+		my $destination = $container_directories{'remote'} . "/$dir_to_synch";
 
 		if ( $direction eq 'from' ) {
 			( $source, $destination ) = ( $destination, $source );
@@ -168,14 +167,14 @@ B<generate-synch-scripts.pl> looks in a directory for a file call gss.txt.
 An example of such a file might be:
 
 	rsync --progress -rvuztp 
-	/cygdrive/V/rsync-excluded.txt
-	/cygdrive/W/rsync-excluded.txt
-	/cygdrive/V
-	/cygdrive/W
+	/Users/foo/rsync-excluded.txt
+	Foo@remote:/cygdrive/Z/rsync-excluded.txt
+	/Users/foo
+	Foo@remote:/cygdrive/Z
 	
-	videos
-	music
 	books
+	music
+	videos
 
 The first line of the file is the rsync command that will be used to synch the directories.
 The second and third lines contain the locations of the files that list the files to be excluded.
