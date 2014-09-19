@@ -19,8 +19,7 @@ GetOptions(
 	'help|?'        => \$help,
 	'man'           => \$man,
 	'directory|d=s' => \$directory
-  )
-  or pod2usage(2);
+) or pod2usage(2);
 
 my $windows = $^O eq 'MSWin32';
 
@@ -54,9 +53,9 @@ chomp @directories_file_lines;
 my ( %container_directories, %rsync_excluded_files );
 my $rsync_command;
 (
-	$rsync_command,
-	$rsync_excluded_files{'local'}, $rsync_excluded_files{'remote'},
-	$container_directories{'local'}, $container_directories{'remote'}
+	$rsync_command,                  $rsync_excluded_files{'local'},
+	$rsync_excluded_files{'remote'}, $container_directories{'local'},
+	$container_directories{'remote'}
 ) = @directories_file_lines[ 0 .. 4 ];
 my @dirs_to_synch;
 
@@ -124,9 +123,12 @@ for (qw/to from/) {
 }
 
 # Make the script for running everything
-generate_run_all_script( $directory, $script_extension, $cd_command,
-	$script_calling_command, $directory_separator, $windows, $pushd_command,
-	$popd_command );
+generate_run_all_script(
+	$directory,              $script_extension,    $cd_command,
+	$script_calling_command, $directory_separator, $windows,
+	$pushd_command,
+	$popd_command
+);
 
 __END__
 
