@@ -13,15 +13,23 @@ use GenerateSynchScripts qw(
 my $man  = 0;
 my $help = 0;
 
-my ($directory);
+my ( $directory, $force_windows );
 
 GetOptions(
 	'help|?'        => \$help,
 	'man'           => \$man,
-	'directory|d=s' => \$directory
+	'directory|d=s' => \$directory,
+	'windows!'      => \$force_windows
 ) or pod2usage(2);
 
-my $windows = $^O eq 'MSWin32';
+my $windows;
+
+if ( defined $force_windows ) {
+	$windows = $force_windows;
+}
+else {
+	$windows = $^O eq 'MSWin32';
+}
 
 my ( $script_extension, $cd_command, $script_calling_command,
 	$directory_separator, $pushd_command, $popd_command );
@@ -123,12 +131,9 @@ for (qw/to from/) {
 }
 
 # Make the script for running everything
-generate_run_all_script(
-	$directory,              $script_extension,    $cd_command,
-	$script_calling_command, $directory_separator, $windows,
-	$pushd_command,
-	$popd_command
-);
+generate_run_all_script( $directory, $script_extension, $cd_command,
+	$script_calling_command, $directory_separator, $windows, $pushd_command,
+	$popd_command );
 
 __END__
 
