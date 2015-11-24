@@ -7,8 +7,8 @@ use Getopt::Long;
 use Pod::Usage;
 
 use GenerateSynchScripts qw(
-  generate_run_all_script
-  read_gss_file
+generate_run_all_script
+read_gss_file
 );
 
 my $man  = 0;
@@ -17,38 +17,38 @@ my $help = 0;
 my ( $directory, $force_windows );
 
 GetOptions(
-	'help|?'        => \$help,
-	'man'           => \$man,
-	'directory|d=s' => \$directory,
-	'windows!'      => \$force_windows
+    'help|?'        => \$help,
+    'man'           => \$man,
+    'directory|d=s' => \$directory,
+    'windows!'      => \$force_windows
 ) or pod2usage(2);
 
 my $windows;
 
 if ( defined $force_windows ) {
-	$windows = $force_windows;
+    $windows = $force_windows;
 }
 else {
-	$windows = $^O eq 'MSWin32';
+    $windows = $^O eq 'MSWin32';
 }
 
 my ( $script_extension, $cd_command, $script_calling_command,
-	$directory_separator, $pushd_command, $popd_command );
+    $directory_separator, $pushd_command, $popd_command );
 if ($windows) {
-	$script_extension       = 'bat';
-	$cd_command             = 'CD';
-	$script_calling_command = 'CALL';
-	$directory_separator    = '\\';
-	$pushd_command          = 'PUSHD';
-	$popd_command           = 'POPD';
+    $script_extension       = 'bat';
+    $cd_command             = 'CD';
+    $script_calling_command = 'CALL';
+    $directory_separator    = '\\';
+    $pushd_command          = 'PUSHD';
+    $popd_command           = 'POPD';
 }
 else {
-	$script_extension       = 'sh';
-	$cd_command             = 'cd';
-	$script_calling_command = '/bin/bash';
-	$directory_separator    = '/';
-	$pushd_command          = 'pushd';
-	$popd_command           = 'popd';
+    $script_extension       = 'sh';
+    $cd_command             = 'cd';
+    $script_calling_command = '/bin/bash';
+    $directory_separator    = '/';
+    $pushd_command          = 'pushd';
+    $popd_command           = 'popd';
 }
 
 pod2usage(1) if $help;
@@ -64,61 +64,61 @@ my @dirs_to_synch = @$dirs_to_synch_ref;
 my $sef_script = "$directory/update-rsync-excluded.$script_extension";
 
 unless ( -f $sef_script ) {
-	open SEF, ">$sef_script";
-	print SEF <<OUT;
+    open SEF, ">$sef_script";
+    print SEF <<OUT;
 $rsync_command $rsync_excluded_files{local} $rsync_excluded_files{remote}
 $rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
 OUT
 
-	close SEF;
+    close SEF;
 
-	chmod( 0755, $sef_script ) unless $windows;
+    chmod( 0755, $sef_script ) unless $windows;
 }
 
 # Make the scripts for synching
 
 for (qw/to from/) {
-	my $direction        = $_;
-	my $synch_script_dir = "$directory/$direction";
-	mkdir $synch_script_dir unless -d $synch_script_dir;
+    my $direction        = $_;
+    my $synch_script_dir = "$directory/$direction";
+    mkdir $synch_script_dir unless -d $synch_script_dir;
 
-	for my $dir_to_synch (@dirs_to_synch) {
-		my $source      = $container_directories{'local'} . "/$dir_to_synch";
-		my $destination = $container_directories{'remote'} . "/$dir_to_synch";
+    for my $dir_to_synch (@dirs_to_synch) {
+        my $source      = $container_directories{'local'} . "/$dir_to_synch";
+        my $destination = $container_directories{'remote'} . "/$dir_to_synch";
 
-		if ( $direction eq 'from' ) {
-			( $source, $destination ) = ( $destination, $source );
-		}
+        if ( $direction eq 'from' ) {
+            ( $source, $destination ) = ( $destination, $source );
+        }
 
-		my $synch_script = "$synch_script_dir/$dir_to_synch.$script_extension";
+        my $synch_script = "$synch_script_dir/$dir_to_synch.$script_extension";
 
-		unless ( -f $synch_script ) {
-			open SYNCH, ">$synch_script" or die $!;
-			print SYNCH
-"$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
-			close SYNCH;
+        unless ( -f $synch_script ) {
+            open SYNCH, ">$synch_script" or die $!;
+            print SYNCH
+            "$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
+            close SYNCH;
 
-			chmod( 0755, $synch_script ) unless $windows;
-		}
-	}
+            chmod( 0755, $synch_script ) unless $windows;
+        }
+    }
 
-	my $all_script = "$synch_script_dir/all.$script_extension";
-	unless ( -f $all_script ) {
-		open ALL, ">$all_script";
-		for my $dir_to_synch (@dirs_to_synch) {
-			print ALL
-			  "$script_calling_command $dir_to_synch.$script_extension\n";
-		}
-		close ALL;
+    my $all_script = "$synch_script_dir/all.$script_extension";
+    unless ( -f $all_script ) {
+        open ALL, ">$all_script";
+        for my $dir_to_synch (@dirs_to_synch) {
+            print ALL
+            "$script_calling_command $dir_to_synch.$script_extension\n";
+        }
+        close ALL;
 
-		chmod( 0755, $all_script ) unless $windows;
-	}
+        chmod( 0755, $all_script ) unless $windows;
+    }
 }
 
 # Make the script for running everything
 generate_run_all_script( $directory, $script_extension, $cd_command,
-	$script_calling_command, $directory_separator, $windows, $pushd_command,
-	$popd_command );
+    $script_calling_command, $directory_separator, $windows, $pushd_command,
+    $popd_command );
 
 __END__
 
@@ -158,15 +158,15 @@ B<generate-synch-scripts.pl> looks in a directory for a file call gss.txt.
 
 An example of such a file might be:
 
-	rsync --progress -rvuztp 
-	/Users/foo/rsync-excluded.txt
-	Foo@remote:/cygdrive/Z/rsync-excluded.txt
-	/Users/foo
-	Foo@remote:/cygdrive/Z
-	
-	books
-	music
-	videos
+    rsync --progress -rvuztp 
+    /Users/foo/rsync-excluded.txt
+    Foo@remote:/cygdrive/Z/rsync-excluded.txt
+    /Users/foo
+    Foo@remote:/cygdrive/Z
+
+    books
+    music
+    videos
 
 The first line of the file is the rsync command that will be used to synch the directories.
 The second and third lines contain the locations of the files that list the files to be excluded.
