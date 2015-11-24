@@ -3,6 +3,8 @@ package GenerateSynchScripts;
 use strict;
 use warnings;
 
+use Win32;
+
 use base 'Exporter';
 
 our @EXPORT_OK = qw(
@@ -45,11 +47,13 @@ sub generate_run_all_script {
         $directory_separator, $windows, $pushd_command, $popd_command )
     = @_;
 
+    my $directory_in_script = get_directory_in_script($directory, $windows);
+
     my $all_script = "$directory/all.$script_extension";
     unless ( -f $all_script ) {
         open ALL, ">$all_script";
         print ALL <<OUT;
-$pushd_command "$directory"
+$pushd_command "$directory_in_script"
 $script_calling_command update-rsync-excluded.$script_extension
 $cd_command to
 $script_calling_command all.$script_extension
@@ -62,6 +66,30 @@ OUT
         close ALL;
 
         chmod( 0755, $all_script ) unless $windows;
+    }
+}
+
+sub get_directory_in_script {
+    my $directory = shift;
+    my $windows = shift;
+
+    if ($windows) {
+        my $cygdrive_letter = undef;
+        if ($directory =~ m{/cygdrive/([a-zA-Z])(.+)}) {
+            $cygdrive_letter = $1;
+            $directory = $2;
+        }
+
+        my $windowsDirectory = Win32::GetFullPathName($directory);
+
+        if (defined($cygdrive_letter)) {
+            $cygdrive_letter = uc($cygdrive_letter);
+            $windowsDirectory =~ s/^[a-zA-Z]/$cygdrive_letter/;
+        }
+        
+        return $windowsDirectory;
+    } else {
+        return $directory;
     }
 }
 

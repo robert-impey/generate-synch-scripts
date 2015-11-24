@@ -6,6 +6,8 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
+use Cwd qw(abs_path);
+
 use GenerateSynchScripts qw(
 generate_run_all_script
 read_gss_file
@@ -22,6 +24,8 @@ GetOptions(
     'directory|d=s' => \$directory,
     'windows!'      => \$force_windows
 ) or pod2usage(2);
+
+$directory = abs_path($directory);
 
 my $windows;
 
