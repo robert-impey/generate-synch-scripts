@@ -13,9 +13,9 @@ generate_run_all_script
 read_gss_file
 );
 
-my $has_Win32 = 0;
+my $has_Win32;
 BEGIN {
-    eval "use Win32; 1;" and $has_Win32 = 1; 
+    $has_Win32 = eval "use Win32; 1;"; 
 }
 
 my $man  = 0;
