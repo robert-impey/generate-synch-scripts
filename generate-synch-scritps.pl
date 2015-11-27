@@ -13,6 +13,11 @@ generate_run_all_script
 read_gss_file
 );
 
+my $has_Win32 = 0;
+BEGIN {
+    eval "use Win32; 1;" and $has_Win32 = 1; 
+}
+
 my $man  = 0;
 my $help = 0;
 
@@ -34,6 +39,10 @@ if ( defined $force_windows ) {
 }
 else {
     $windows = $^O eq 'MSWin32';
+}
+
+if ($windows and not $has_Win32) {
+    die "Windows scripts can't be created without the Win32 module!\n";
 }
 
 my ( $script_extension, $cd_command, $script_calling_command,

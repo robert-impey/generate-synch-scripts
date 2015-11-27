@@ -3,7 +3,9 @@ package GenerateSynchScripts;
 use strict;
 use warnings;
 
-use Win32;
+BEGIN {
+    eval "use Win32; 1;";
+}
 
 use base 'Exporter';
 
