@@ -85,7 +85,7 @@ OUT
 
     close SEF;
 
-    chmod( 0755, $sef_script ) unless $windows;
+    chmod( 0755, $sef_script );
 }
 
 # Make the scripts for synching
@@ -111,7 +111,7 @@ for (qw/to from/) {
             "$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
             close SYNCH;
 
-            chmod( 0755, $synch_script ) unless $windows;
+            chmod( 0755, $synch_script );
         }
     }
 
@@ -124,7 +124,7 @@ for (qw/to from/) {
         }
         close ALL;
 
-        chmod( 0755, $all_script ) unless $windows;
+        chmod( 0755, $all_script );
     }
 }
 

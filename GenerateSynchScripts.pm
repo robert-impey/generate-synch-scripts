@@ -67,7 +67,7 @@ OUT
 
         close ALL;
 
-        chmod( 0755, $all_script ) unless $windows;
+        chmod( 0755, $all_script );
     }
 }
 
