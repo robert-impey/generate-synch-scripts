@@ -30,6 +30,15 @@ GetOptions(
     'windows!'      => \$force_windows
 ) or pod2usage(2);
 
+pod2usage( -exitstatus => 0, -verbose => 2 ) unless ( $directory) ;
+pod2usage(1) if $help;
+pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
+
+if (not -d $directory) {
+    warn "$directory is not a directory!\n";
+    exit;
+}
+
 $directory = abs_path($directory);
 
 my $windows;
@@ -64,9 +73,6 @@ else {
     $popd_command           = 'popd';
 }
 
-pod2usage(1) if $help;
-pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
-
 my ($rsync_command, $container_directories_ref, $rsync_excluded_files_ref, $dirs_to_synch_ref) = read_gss_file($directory);
 my %container_directories = %$container_directories_ref;
 my %rsync_excluded_files = %$rsync_excluded_files_ref;
@@ -79,8 +85,8 @@ my $sef_script = "$directory/update-rsync-excluded.$script_extension";
 unless ( -f $sef_script ) {
     open SEF, ">$sef_script";
     print SEF <<OUT;
-$rsync_command $rsync_excluded_files{local} $rsync_excluded_files{remote}
-$rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
+    $rsync_command $rsync_excluded_files{local} $rsync_excluded_files{remote}
+    $rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
 OUT
 
     close SEF;
@@ -146,6 +152,7 @@ __END__
        -help            brief help message
        -man             full documentation
        -directory|d		The directory in which to generate the scripts.
+        --windows   Force Windows batch scripts.
 
 =head1 OPTIONS
 
@@ -162,6 +169,10 @@ Prints the manual page and exits.
 =item B<-directory|d>
 
 Set the directory in which to generate the scripts.
+
+=item B<-windows|w>
+
+Force generating Windows batch scripts.
 
 =back
 
