@@ -46,15 +46,15 @@ sub read_gss_file
 
 sub generate_run_all_script {
     my ( $directory, $script_extension, $cd_command, $script_calling_command,
-        $directory_separator, $windows, $pushd_command, $popd_command )
+        $directory_separator, $windows, $pushd_command, $popd_command, $autogen_warning )
     = @_;
 
     my $directory_in_script = get_directory_in_script($directory, $windows);
 
     my $all_script = "$directory/all.$script_extension";
-    unless ( -f $all_script ) {
-        open ALL, ">$all_script";
-        print ALL <<OUT;
+    open ALL, ">$all_script";
+    print ALL <<OUT;
+$autogen_warning
 $pushd_command "$directory_in_script"
 $script_calling_command update-rsync-excluded.$script_extension
 $cd_command to
@@ -65,10 +65,8 @@ $cd_command ..
 $popd_command
 OUT
 
-        close ALL;
-
-        chmod( 0755, $all_script );
-    }
+    close ALL;
+    chmod( 0755, $all_script );
 }
 
 sub get_directory_in_script {

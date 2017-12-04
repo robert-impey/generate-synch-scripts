@@ -55,7 +55,7 @@ if ($windows and not $has_Win32) {
 }
 
 my ( $script_extension, $cd_command, $script_calling_command,
-    $directory_separator, $pushd_command, $popd_command );
+    $directory_separator, $pushd_command, $popd_command, $open_comment);
 if ($windows) {
     $script_extension       = 'bat';
     $cd_command             = 'CD';
@@ -63,6 +63,7 @@ if ($windows) {
     $directory_separator    = '\\';
     $pushd_command          = 'PUSHD';
     $popd_command           = 'POPD';
+    $open_comment = 'REM';
 }
 else {
     $script_extension       = 'sh';
@@ -71,6 +72,7 @@ else {
     $directory_separator    = '/';
     $pushd_command          = 'pushd';
     $popd_command           = 'popd';
+    $open_comment = '#';
 }
 
 my ($rsync_command, $container_directories_ref, $rsync_excluded_files_ref, $dirs_to_synch_ref) = read_gss_file($directory);
@@ -78,21 +80,20 @@ my %container_directories = %$container_directories_ref;
 my %rsync_excluded_files = %$rsync_excluded_files_ref;
 my @dirs_to_synch = @$dirs_to_synch_ref;
 
+my $autogen_warning = "$open_comment DO NOT EDIT! AUTOGEN'D!";
+
 # Make the script to synch the rsync excluded files.
 
 my $sef_script = "$directory/update-rsync-excluded.$script_extension";
 
-unless ( -f $sef_script ) {
-    open SEF, ">$sef_script";
-    print SEF <<OUT;
-    $rsync_command $rsync_excluded_files{local} $rsync_excluded_files{remote}
-    $rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
+open SEF, ">$sef_script";
+print SEF <<OUT;
+$autogen_warning
+$rsync_command $rsync_excluded_files{local} $rsync_excluded_files{remote}
+$rsync_command $rsync_excluded_files{remote} $rsync_excluded_files{local}
 OUT
-
-    close SEF;
-
-    chmod( 0755, $sef_script );
-}
+close SEF;
+chmod( 0755, $sef_script );
 
 # Make the scripts for synching
 
@@ -111,33 +112,27 @@ for (qw/to from/) {
 
         my $synch_script = "$synch_script_dir/$dir_to_synch.$script_extension";
 
-        unless ( -f $synch_script ) {
-            open SYNCH, ">$synch_script" or die $!;
-            print SYNCH
-            "$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
-            close SYNCH;
-
-            chmod( 0755, $synch_script );
-        }
+        open SYNCH, ">$synch_script" or die $!;
+        print SYNCH $autogen_warning, "\n";
+        print SYNCH "$rsync_command --exclude-from=$rsync_excluded_files{local} $source/ $destination";
+        close SYNCH;
+        chmod( 0755, $synch_script );
     }
 
     my $all_script = "$synch_script_dir/all.$script_extension";
-    unless ( -f $all_script ) {
-        open ALL, ">$all_script";
-        for my $dir_to_synch (@dirs_to_synch) {
-            print ALL
-            "$script_calling_command $dir_to_synch.$script_extension\n";
-        }
-        close ALL;
-
-        chmod( 0755, $all_script );
+    open ALL, ">$all_script";
+    print ALL $autogen_warning, "\n";
+    for my $dir_to_synch (@dirs_to_synch) {
+        print ALL "$script_calling_command $dir_to_synch.$script_extension\n";
     }
+    close ALL;
+    chmod( 0755, $all_script );
 }
 
 # Make the script for running everything
 generate_run_all_script( $directory, $script_extension, $cd_command,
     $script_calling_command, $directory_separator, $windows, $pushd_command,
-    $popd_command );
+    $popd_command, $autogen_warning );
 
 __END__
 
