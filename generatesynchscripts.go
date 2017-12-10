@@ -11,7 +11,7 @@ import (
 )
 
 const allDirsScriptName = "_all.sh"
-const cmdLineTemplate = "%v %v/%v/ %v/%v\n"
+const cmdLineTemplate = "%v %v/%v/ %v/%v"
 
 type ScriptsInfo struct {
 	dir, synch, src, dst string
@@ -114,23 +114,42 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 	fmt.Println()
 
 	scriptFileName := filepath.Join(scriptsInfo.dir, allDirsScriptName)
-	scriptContents := "#!/bin/bash\n# AUTOGEN'D - DO NOT EDIT!\n"
+	scriptContents := "#!/bin/bash\n# AUTOGEN'D - DO NOT EDIT!\n\n"
 
 	for _, dir := range scriptsInfo.dirs {
-		scriptContents += fmt.Sprintf(
-			cmdLineTemplate,
+		to := getCmdLine(
 			scriptsInfo.synch,
-			scriptsInfo.src, dir,
-			scriptsInfo.dst, dir)
-		scriptContents += fmt.Sprintf(
-			cmdLineTemplate,
+			dir,
+			scriptsInfo.src,
+			scriptsInfo.dst)
+		scriptContents += getEchoLine(to) + "\n"
+		scriptContents += to + "\n"
+
+		from := getCmdLine(
 			scriptsInfo.synch,
-			scriptsInfo.dst, dir,
-			scriptsInfo.src, dir)
+			dir,
+			scriptsInfo.dst,
+			scriptsInfo.src)
+		scriptContents += getEchoLine(from) + "\n"
+		scriptContents += from + "\n"
+
+		scriptContents += "\n"
 	}
 	err := ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
 	}
 	return nil
+}
+
+func getCmdLine(synchRoot, dir, src, dst string) string {
+	return fmt.Sprintf(
+		cmdLineTemplate,
+		synchRoot,
+		src, dir,
+		dst, dir)
+}
+
+func getEchoLine(cmd string) string {
+	return fmt.Sprintf("echo '%s'", cmd)
 }
