@@ -21,7 +21,7 @@ Then running
 
 `PS C:\scripts> generate-synch-scripts.exe .\gss.txt`
 
-will create a script called `_all.sh` that will synch the subfolders (config, data, etc.) between the two main folders (OneDrive and X:\)
+will create a script called `_all.sh` that will synch the subfolders (config, data, etc.) between the two main folders (OneDrive and X:\\)
 
 The first line is the invocation of rsync that you wish to use as the base for the commands in the scripts.
 Other programs (such as RoboCopy) may work here.
