@@ -27,3 +27,6 @@ The first line is the invocation of rsync that you wish to use as the base for t
 Other programs (such as RoboCopy) may work here.
 
 This script can now be invoked as a scheduled task.
+
+Note that synchronizing two folders in this way can make file deletion a problem.
+This tool may help: https://github.com/robert-impey/staydeleted
