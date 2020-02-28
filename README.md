@@ -6,7 +6,7 @@ A program for generating scripts for synchronising directories using rsync.
 
 For example, create a file `C:\scripts\gss.txt` with this content:
 
-`
+```
 rsync --update --recursive --verbose --times --iconv=utf8 
 /cygdrive/x
 /cygdrive/c/Users/rober/OneDrive
@@ -15,7 +15,7 @@ config
 data
 docs
 local-scripts
-`
+```
 
 Then running
 
