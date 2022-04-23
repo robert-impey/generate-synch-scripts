@@ -1,3 +1,3 @@
 module github.com/robert-impey/generate-synch-scripts
 
-go 1.16
+go 1.18
