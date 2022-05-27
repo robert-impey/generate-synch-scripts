@@ -2,7 +2,7 @@
 
 A program for generating scripts for synchronising directories using rsync.
 
-For example, create a file `C:\scripts\gss.txt` with this content:
+For example, create a file `C:\scripts\OneDrive.txt` with this content:
 
 ```
 rsync --update --recursive --verbose --times --iconv=utf8 
@@ -17,9 +17,10 @@ local-scripts
 
 Then running
 
-`PS C:\scripts> generate-synch-scripts.exe .\gss.txt`
+`PS C:\scripts> generate-synch-scripts.exe .\OneDrive.txt`
 
-will create a script called `_all.sh` that will synch the subfolders (config, data, etc.) between the two main folders (OneDrive and X:\\)
+will create a script called `OneDrive.sh` that will synch the subfolders (config, data, etc.)
+between the two main folders (OneDrive and X:\\). The script will be put in `HOME\autogen\synch`.
 
 The first line is the invocation of rsync that you wish to use as the base for the commands in the scripts.
 Other programs (such as RoboCopy) may work here.
