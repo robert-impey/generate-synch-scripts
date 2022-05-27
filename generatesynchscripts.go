@@ -3,19 +3,21 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
+	"path"
 	"path/filepath"
 	"strings"
 )
 
-const allDirsScriptName = "_all.sh"
 const cmdLineTemplate = "%v %v/%v/ %v/%v"
 
 type ScriptsInfo struct {
-	dir, synch, src, dst string
-	dirs                 []string
+	name, dir, synch, src, dst string
+	dirs                       []string
 }
 
 func main() {
@@ -57,6 +59,10 @@ func generateSynchScripts(gssFile string) error {
 
 func parseGSSFile(gssFileName string) (*ScriptsInfo, error) {
 	scriptsInfo := new(ScriptsInfo)
+
+	base := filepath.Base(gssFileName)
+
+	scriptsInfo.name = strings.TrimSuffix(base, path.Ext(base))
 
 	// Script directory
 	dir := filepath.Dir(gssFileName)
@@ -113,7 +119,23 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 	}
 	fmt.Println()
 
-	scriptFileName := filepath.Join(scriptsInfo.dir, allDirsScriptName)
+	user, err := user.Current()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		return err
+	}
+	autoGenDir := filepath.Join(user.HomeDir, "autogen", "synch")
+
+	if _, err := os.Stat(autoGenDir); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(autoGenDir, os.ModePerm)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			return err
+		}
+	}
+
+	scriptName := fmt.Sprintf("%s.sh", scriptsInfo.name)
+	scriptFileName := filepath.Join(autoGenDir, scriptName)
 	scriptContents := "#!/bin/bash\n# AUTOGEN'D - DO NOT EDIT!\n\n"
 
 	for _, dir := range scriptsInfo.dirs {
@@ -135,7 +157,7 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 
 		scriptContents += "\n"
 	}
-	err := ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
+	err = ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
 	}
