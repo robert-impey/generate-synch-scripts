@@ -75,11 +75,11 @@ func parseGSSFile(gssFileName string) (*ScriptsInfo, error) {
 
 	// Read the file
 	gssFile, err := os.Open(gssFileName)
-	defer gssFile.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to open %v - %v\n", gssFileName, err)
 		return scriptsInfo, err
 	}
+	defer gssFile.Close()
 	input := bufio.NewScanner(gssFile)
 
 	// Get the script root
@@ -121,7 +121,7 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 
 	user, err := user.Current()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		fmt.Fprint(os.Stderr, err.Error())
 		return err
 	}
 	autoGenDir := filepath.Join(user.HomeDir, "autogen", "synch")
@@ -129,14 +129,25 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 	if _, err := os.Stat(autoGenDir); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(autoGenDir, os.ModePerm)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
+			fmt.Fprint(os.Stderr, err.Error())
 			return err
 		}
 	}
 
 	scriptName := fmt.Sprintf("%s.sh", scriptsInfo.name)
 	scriptFileName := filepath.Join(autoGenDir, scriptName)
+
+	if _, err := os.Stat(scriptFileName); err == nil {
+		fmt.Printf("%v exists - Deleting...\n", scriptFileName)
+		err := os.Remove(scriptFileName)
+		if err != nil {
+			fmt.Fprint(os.Stderr, err.Error())
+		}
+	}
+
 	scriptContents := "#!/bin/bash\n# AUTOGEN'D - DO NOT EDIT!\n\n"
+
+	scriptContents += "date\n\n"
 
 	for _, dir := range scriptsInfo.dirs {
 		to := getCmdLine(
@@ -156,7 +167,11 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 		scriptContents += from + "\n"
 
 		scriptContents += "\n"
+
 	}
+
+	scriptContents += "\ndate\n"
+
 	err = ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
