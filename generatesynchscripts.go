@@ -5,11 +5,13 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	mapset "github.com/deckarep/golang-set/v2"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -96,14 +98,16 @@ func parseGSSFile(gssFileName string) (*ScriptsInfo, error) {
 	input.Scan()
 
 	// Get the list of directories
-	dirs := make([]string, 0)
+	dirs := mapset.NewSet[string]()
 	for input.Scan() {
 		dir := strings.Trim(input.Text(), " /")
 		if len(dir) > 0 {
-			dirs = append(dirs, dir)
+			dirs.Add(dir)
 		}
 	}
-	scriptsInfo.dirs = dirs
+	dirsSlice := dirs.ToSlice()
+	sort.Strings(dirsSlice)
+	scriptsInfo.dirs = dirsSlice
 
 	return scriptsInfo, nil
 }
