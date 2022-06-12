@@ -128,6 +128,7 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 		fmt.Fprint(os.Stderr, err.Error())
 		return err
 	}
+
 	autoGenDir := filepath.Join(user.HomeDir, "autogen", "synch")
 
 	if _, err := os.Stat(autoGenDir); errors.Is(err, os.ErrNotExist) {
@@ -171,7 +172,6 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 		scriptContents += from + "\n"
 
 		scriptContents += "\n"
-
 	}
 
 	scriptContents += "\ndate\n"
@@ -180,6 +180,61 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
 	}
+
+	if len(scriptsInfo.dirs) > 1 {
+		fileDir := filepath.Join(autoGenDir, scriptsInfo.name)
+
+		if _, err := os.Stat(fileDir); errors.Is(err, os.ErrNotExist) {
+			err := os.MkdirAll(fileDir, os.ModePerm)
+			if err != nil {
+				fmt.Fprint(os.Stderr, err.Error())
+				return err
+			}
+		}
+
+		for _, dir := range scriptsInfo.dirs {
+			scriptName := fmt.Sprintf("%s.sh", dir)
+			scriptFileName := filepath.Join(fileDir, scriptName)
+
+			if _, err := os.Stat(scriptFileName); err == nil {
+				fmt.Printf("%v exists - Deleting...\n", scriptFileName)
+				err := os.Remove(scriptFileName)
+				if err != nil {
+					fmt.Fprint(os.Stderr, err.Error())
+				}
+			}
+
+			scriptContents := "#!/bin/bash\n# AUTOGEN'D - DO NOT EDIT!\n\n"
+
+			scriptContents += "date\n\n"
+
+			to := getCmdLine(
+				scriptsInfo.synch,
+				dir,
+				scriptsInfo.src,
+				scriptsInfo.dst)
+			scriptContents += getEchoLine(to) + "\n"
+			scriptContents += to + "\n"
+
+			from := getCmdLine(
+				scriptsInfo.synch,
+				dir,
+				scriptsInfo.dst,
+				scriptsInfo.src)
+			scriptContents += getEchoLine(from) + "\n"
+			scriptContents += from + "\n"
+
+			scriptContents += "\n"
+
+			scriptContents += "\ndate\n"
+
+			err = ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
+			}
+		}
+	}
+
 	return nil
 }
 
