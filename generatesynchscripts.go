@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -176,7 +175,7 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 
 	scriptContents += "\ndate\n"
 
-	err = ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
+	err = os.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
 	}
@@ -228,7 +227,7 @@ func writeAllDirs(scriptsInfo *ScriptsInfo) error {
 
 			scriptContents += "\ndate\n"
 
-			err = ioutil.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
+			err = os.WriteFile(scriptFileName, []byte(scriptContents), 0x755)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Unable to write script to %v - %v\n", scriptFileName, err)
 			}
