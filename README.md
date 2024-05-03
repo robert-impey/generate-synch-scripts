@@ -1,5 +1,7 @@
 # generate-synch-scripts
 
+Development has moved to https://github.com/robert-impey/tools
+
 A program for generating scripts for synchronising directories using rsync.
 
 For example, create a file `C:\scripts\OneDrive.txt` with this content:
